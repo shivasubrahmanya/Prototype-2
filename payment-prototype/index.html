@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Support | Safety-First Proto</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-color: #3b82f6;
+            --danger-color: #ef4444;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-image:
+                radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.15) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.15) 0%, transparent 20%);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            padding: 20px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            background: linear-gradient(to right, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        p {
+            color: var(--text-secondary);
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        input,
+        select {
+            width: 100%;
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.2s;
+            box-sizing: border-box;
+            /* Fix padding issue */
+        }
+
+        input:focus,
+        select:focus {
+            border-color: var(--accent-color);
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.1s, opacity 0.2s;
+            font-size: 16px;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+
+        .btn-danger {
+            background: transparent;
+            border: 1px solid var(--danger-color);
+            color: var(--danger-color);
+            margin-top: 12px;
+        }
+
+        .btn-danger:hover {
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 99px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .badge-ai {
+            background: rgba(59, 130, 246, 0.2);
+            color: #60a5fa;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        .badge-human {
+            background: rgba(245, 158, 11, 0.2);
+            color: #fbbf24;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .result-box {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 24px;
+            border-left: 3px solid;
+            font-size: 14px;
+        }
+
+        .result-wait {
+            border-color: var(--success-color);
+        }
+
+        .result-escalate {
+            border-color: var(--warning-color);
+        }
+
+        /* Spinner */
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top: 3px solid var(--accent-color);
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <!-- STEP 1: INPUT FORM -->
+        <div id="step-1" class="card">
+            <h1>Payment Help</h1>
+            <p>Tell us about the transaction issue.</p>
+
+            <div class="input-group">
+                <label>Transaction ID</label>
+                <input type="text" id="txnId" placeholder="e.g. TXN_12345" value="TXN_88291">
+            </div>
+
+            <div class="input-group">
+                <label>Issue Type</label>
+                <select id="issueType">
+                    <option value="debited_failed">Payment Failed but Amount Debited</option>
+                    <option value="pending">Transaction Stuck in Pending</option>
+                    <option value="high_value">High Value Transaction Issue</option>
+                </select>
+            </div>
+
+            <p style="font-size: 12px; opacity: 0.6; margin-top: 20px;">
+                * This is a prototype. No real data is processed.
+            </p>
+
+            <button class="btn-primary" onclick="submitIssue()">Check Status</button>
+        </div>
+
+        <!-- STEP 2: AI ANALYSIS -->
+        <div id="step-2" class="card hidden">
+            <div style="text-align: center; padding: 20px;">
+                <div class="spinner"></div>
+                <p style="margin-top: 20px;">AI Agent is analyzing transaction safety rules...</p>
+            </div>
+        </div>
+
+        <!-- STEP 3: AI RESULT -->
+        <div id="step-3" class="card hidden">
+            <span class="badge badge-ai">SafeGuard AI</span>
+            <h1 id="result-title">Analysis Complete</h1>
+            <div id="result-content" class="result-box"></div>
+
+            <p id="result-desc"></p>
+
+            <div id="action-buttons">
+                <!-- Injected via JS -->
+            </div>
+        </div>
+
+        <!-- STEP 4: HUMAN HANDOFF -->
+        <div id="step-4" class="card hidden">
+            <span class="badge badge-human">Escalated to Human</span>
+            <h1>Senior Support Assigned</h1>
+            <p>Your case has been flagged for manual review due to financial safety protocols.</p>
+
+            <div class="result-box result-escalate" style="background: rgba(245, 158, 11, 0.1);">
+                <strong>Ticket #9921 Created</strong><br>
+                Reason: <span id="escalation-reason-final"></span>
+            </div>
+
+            <p>A specialist will review the bank logs and email you within 2 hours. We never automate refunds for
+                high-risk cases to ensure your security.</p>
+
+            <button class="btn-primary" onclick="reset()">Start Over</button>
+        </div>
+
+    </div>
+
+    <script>
+        // STRICT LOGIC ENGINE (Mirrors decision_flow.js)
+        const RULES = {
+            HIGH_VALUE: 5000,
+            AUTO_REVERSAL_HOURS: 24
+        };
+
+        function analyze(type) {
+            // SImulating looking up data based on user input type
+            // In a real app, this data comes from the backend DB
+
+            let data = {};
+
+            if (type === 'debited_failed') {
+                data = {
+                    status: 'FAILED',
+                    debited: true,
+                    amount: 450,
+                    certainty: 1.0
+                };
+            } else if (type === 'pending') {
+                data = {
+                    status: 'PENDING',
+                    debited: true,
+                    amount: 150,
+                    time_elapsed: 2, // hours
+                    certainty: 1.0
+                };
+            } else if (type === 'high_value') {
+                data = {
+                    status: 'FAILED',
+                    debited: true,
+                    amount: 10000, // > 5000
+                    certainty: 0.9
+                }
+            }
+
+            // DECISION LOGIC
+            // Rule 1: Money Debited + Failed Status = ESCALATE
+            if (data.debited && data.status === 'FAILED') {
+                return {
+                    decision: 'ESCALATE',
+                    reason: 'Money debited from account but gateway marks transaction as FAILED. Reconciliation required.'
+                };
+            }
+
+            // Rule 2: High Amount
+            if (data.amount > RULES.HIGH_VALUE) {
+                return {
+                    decision: 'ESCALATE',
+                    reason: 'Transaction amount exceeds automated safety limits.'
+                };
+            }
+
+            // Rule 3: Pending within window
+            if (data.status === 'PENDING' && data.time_elapsed < RULES.AUTO_REVERSAL_HOURS) {
+                return {
+                    decision: 'WAIT',
+                    reason: 'Transaction is pending. Bank auto-reversal window is active (24h).'
+                };
+            }
+
+            return { decision: 'ESCALATE', reason: 'Unknown state safety fallback.' };
+        }
+
+        // UI HANDLERS
+        function submitIssue() {
+            const type = document.getElementById('issueType').value;
+
+            // Go to loading
+            showStep(2);
+
+            // Simulate Network Delay
+            setTimeout(() => {
+                const result = analyze(type);
+                showResult(result);
+            }, 1500);
+        }
+
+        function showResult(result) {
+            showStep(3);
+            const content = document.getElementById('result-content');
+            const desc = document.getElementById('result-desc');
+            const btns = document.getElementById('action-buttons');
+
+            if (result.decision === 'WAIT') {
+                content.className = 'result-box result-wait';
+                content.innerHTML = `<strong>Recommendation: WAIT FOR AUTO-REVERSAL</strong><br>${result.reason}`;
+                desc.textContent = "Your funds are safe. The banking system will automatically reverse this within the window. No action is needed right now.";
+                btns.innerHTML = `<button class="btn-primary" onclick="reset()">Understood</button>`;
+            } else {
+                content.className = 'result-box result-escalate';
+                content.innerHTML = `<strong>Action Required: ESCALATE TO STAFF</strong><br>${result.reason}`;
+                desc.textContent = "We cannot automatically resolve this because it involves a discrepancy in funds. A human agent needs to verify with the bank.";
+                btns.innerHTML = `
+                    <button class="btn-primary" onclick="escalate('${result.reason}')">Connect to Human Agent</button>
+                    <button class="btn-danger" onclick="reset()">Cancel</button>
+                `;
+            }
+        }
+
+        function escalate(reason) {
+            document.getElementById('escalation-reason-final').textContent = reason;
+            showStep(4);
+        }
+
+        function reset() {
+            document.getElementById('txnId').value = "TXN_" + Math.floor(Math.random() * 100000);
+            showStep(1);
+        }
+
+        function showStep(stepNum) {
+            [1, 2, 3, 4].forEach(n => {
+                document.getElementById('step-' + n).classList.add('hidden');
+            });
+            document.getElementById('step-' + stepNum).classList.remove('hidden');
+        }
+
+    </script>
+</body>
+
+</html>
